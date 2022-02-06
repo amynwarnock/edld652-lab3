@@ -1,7 +1,7 @@
 ---
 title: "EDLD 652 Lab 3"
 author: "Ksenia Gordeeva, Rebeccca Gordon, Amy Warnock"
-date: "1/31/2022"
+date: "2/7/2022"
 output:
   html_document:
    code_folding: hide
@@ -19,6 +19,9 @@ library(colorspace)
 #install.packages("colorspace", repos = "http://R-Forge.R-project.org")
 #devtools::install_github("clauswilke/colorblindr")
 library(colorblindr)
+#remotes::install_github("hrbrmstr/albersusa")
+library(albersusa)
+library(viridis)
 ```
 
 ### 1. Visualize the total production of honey across years by state Use color to highlight the west coast (Washington, Oregon, and California) with a different color used for each west coast state.
@@ -147,7 +150,27 @@ honey_avg_region %>%
 ### 6. Create at least one more plot of your choosing using color to distinguish, represent data values, or highlight. 
 
 ```{r part6}
+us <- usa_sf()
 
+us <- rename(us, state = iso_3166_2)
+
+df <- right_join(honeyproduction, us)
+
+df_tib <- as.tibble(df)
+
+ggplot(data = df_tib, aes(geometry = geometry, 
+													fill = priceperlb), 
+			 alpha = 0.9) + 
+	geom_sf(color = "white", size = 0) +
+	guides(color = "none") +
+		facet_wrap(~year) +
+	scale_fill_viridis(name="Price per pound", 
+										 option = "magma",
+										 label = scales::dollar,
+										 limits = c(0,5)) +
+	labs(title = "Price of honey per pound from 1998-2012") +
+	theme_void()
+		
 ```
 
 
