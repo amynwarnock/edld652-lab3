@@ -154,7 +154,7 @@ us <- usa_sf()
 
 us <- rename(us, state = iso_3166_2)
 
-df <- right_join(honeyproduction, us)
+df <- right_join(honey, us)
 
 df_tib <- as.tibble(df)
 
