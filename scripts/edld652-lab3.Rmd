@@ -2,15 +2,23 @@
 title: "EDLD 652 Lab 3"
 author: "Ksenia Gordeeva, Rebeccca Gordon, Amy Warnock"
 date: "1/31/2022"
-output: html_document
+output:
+  html_document:
+   code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE)
 
 library(tidyverse)
 library(rio)
 library(here)
+library(colorspace)
+#devtools::install_github("wilkelab/cowplot")
+#install.packages("colorspace", repos = "http://R-Forge.R-project.org")
+#devtools::install_github("clauswilke/colorblindr")
+library(colorblindr)
 ```
 
 ### 1. Visualize the total production of honey across years by state Use color to highlight the west coast (Washington, Oregon, and California) with a different color used for each west coast state.
@@ -32,19 +40,108 @@ library(here)
 ```
 
 ### 4. Download the file here denoting the region and division of each state.  
-* Join the file with your honey file.
-* Produce a bar plot displaying the average honey for each state (collapsing across years).
-* Use color to highlight the region of the country the state is from.
-* Note patterns you notice.
+* **Join the file with your honey file.**
+* **Produce a bar plot displaying the average honey for each state (collapsing across years).**
+* **Use color to highlight the region of the country the state is from.**
+* **Note patterns you notice.**
 
-```{r part4}
+(Note: I tried out two different qualitative color palettes for this bar plot.) 
 
+It appears that, on average, states in the Midwestern and Western regions of the US produce the most honey and that states in the Northeast region produce the least. States from the Southern region of the US also appear to produce less overall, with the exception of Florida. The states with the most honey production are fairly large in terms of geographic area. It would be interesting to see if there is a relationship between geographic area of a state and honey production (e.g., are smaller states associated with lower honey production). I'm also curious if there is a certain crop grown in North and South Dakota that commercial honey bees forage on (e.g., clover) and if there is a relationship between prevalence of wind-pollinated crops (e.g., corn, wheat, grass seed) and lower commercial honey production. 
+
+```{r part4-prep, results = 'hide'}
+# load data
+
+honey <- import(here("data", "honeyproduction.csv"), setclass = "tbl_df")
+
+regions <- import(here("data", "us_census_bureau_regions_and_divisions.csv"), setclass = "tbl_df") %>% 
+  rename(state = `State Code`, `state_complete` = State) %>% 
+  rename_with(tolower)
+
+# join honey and regions
+honey_regions <- left_join(honey, regions, by = "state")
+
+# chose to evaluate if there were equal observations for each state
+honey_regions %>% 
+  group_by(state) %>% 
+  summarize(n = n())
+
+# calculate average production across years (raw and in millions), grouping by state and including region
+honey_st_avg <- honey_regions %>% 
+  group_by(state_complete, region) %>% 
+  summarize(state_avg_mil = (mean(totalprod)/1000000),
+            state_avg = mean(totalprod))
 ```
 
+```{r part4-graph, fig.width=7, fig.height=7}
+
+# testing out okabe ito
+honey_st_avg %>%   
+  ggplot(aes(x = state_avg_mil, 
+             y = fct_reorder(state_complete, state_avg_mil),
+             fill = region)) +
+  geom_col(alpha = .9) +
+  scale_fill_OkabeIto() +
+  scale_x_continuous(expand = c(0, 0), 
+                     breaks = c(0, 10, 20, 30), 
+                     labels = c("0", "10 million", "20 million", "30 million")) + 
+  labs(title = "US Honey Production by State",
+       subtitle = "1998 to 2012",
+       y = "State",
+       x = "Average Yearly Production (Pounds)",
+       caption = "Source: #tidytuesday", 
+       fill = "Region") + 
+  theme_minimal() +
+  theme(plot.title.position = "plot",
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank()) 
+
+# v2 with 'dark 2'
+honey_st_avg %>%   
+  ggplot(aes(x = state_avg_mil, 
+             y = fct_reorder(state_complete, state_avg_mil),
+             fill = region)) +
+  geom_col(alpha = .9) +
+  scale_fill_discrete_qualitative("dark 2") +
+  scale_x_continuous(expand = c(0, 0), 
+                     breaks = c(0, 10, 20, 30), 
+                     labels = c("0", "10 million", "20 million", "30 million")) + 
+  labs(title = "US Honey Production by State",
+       subtitle = "1998 to 2012",
+       y = "State",
+       x = "Average Yearly Production (Pounds)",
+       caption = "Source: #tidytuesday", 
+       fill = "Region") + 
+  theme_minimal() +
+  theme(plot.title.position = "plot",
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank()) 
+```
+  
 ### 5. Create a heatmap displaying the average honey production across years by region (averaging across states within region).
 
 ```{r part5}
+# calculate average production across years (raw and in millions), grouping by state and including region
+honey_avg_region <- honey_regions %>% 
+  group_by(region, year) %>% 
+  summarize(reg_avg_mil = (mean(totalprod)/1000000),
+            reg_avg = mean(totalprod))
 
+honey_avg_region %>% 
+  ggplot(aes(year, 
+             fct_reorder(region, reg_avg_mil))) +
+  geom_tile(aes(fill = reg_avg_mil)) + 
+  scale_fill_continuous_sequential(palette = "Red-Yellow", breaks = c(2, 4, 6, 8), labels = c("2 million", "4 million", "6 million", "8 million")) + 
+  scale_x_continuous(expand = c(0, 0), breaks = c(1998, 2003, 2008, 2012)) +
+  labs(title = "US Regional Honey Production",
+       subtitle = "1998 to 2012",
+       y = "Region",
+       x = "Year",
+       caption = "Source: #tidytuesday", 
+       fill = "Average Production (Pounds)") +
+  theme_minimal() +
+  theme(plot.title.position = "plot",
+        panel.grid = element_blank())  
 ```
 
 ### 6. Create at least one more plot of your choosing using color to distinguish, represent data values, or highlight. 
