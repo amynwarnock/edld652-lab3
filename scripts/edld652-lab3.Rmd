@@ -19,12 +19,14 @@ library(colorspace)
 #install.packages("colorspace", repos = "http://R-Forge.R-project.org")
 #devtools::install_github("clauswilke/colorblindr")
 library(colorblindr)
+#install.packages("remotes")
 #remotes::install_github("hrbrmstr/albersusa")
+#AW: I had to answer "No" to the question about the binary packages to get it to download
 library(albersusa)
 library(viridis)
 ```
 
-### 1. Visualize the total production of honey across years by state Use color to highlight the west coast (Washington, Oregon, and California) with a different color used for each west coast state.
+### 1. Visualize the total production of honey across years by state. Use color to highlight the west coast (Washington, Oregon, and California) with a different color used for each west coast state.
 
 ```{r part1}
 
@@ -50,7 +52,7 @@ library(viridis)
 
 (Note: I tried out two different qualitative color palettes for this bar plot.) 
 
-It appears that, on average, states in the Midwestern and Western regions of the US produce the most honey and that states in the Northeast region produce the least. States from the Southern region of the US also appear to produce less overall, with the exception of Florida. The states with the most honey production are fairly large in terms of geographic area. It would be interesting to see if there is a relationship between geographic area of a state and honey production (e.g., are smaller states associated with lower honey production). I'm also curious if there is a certain crop grown in North and South Dakota that commercial honey bees forage on (e.g., clover) and if there is a relationship between prevalence of wind-pollinated crops (e.g., corn, wheat, grass seed) and lower commercial honey production. 
+It appears that, on average, states in the Midwestern and Western regions of the US produce the most honey and that states in the Northeast region produce the least. States from the Southern region of the US also appear to produce less overall, with the exception of Florida. The states with the most honey production are fairly large in terms of geographic area. It would be interesting to see if there is a relationship between geographic area of a state and honey production (e.g., smaller states are associated with lower honey production). I'm also curious if there is a certain crop grown in North and South Dakota that commercial honey bees forage on (e.g., clover) and if there is a relationship between prevalence of wind-pollinated crops (e.g., corn, wheat, grass seed) and lower commercial honey production. 
 
 ```{r part4-prep, results = 'hide'}
 # load data
@@ -64,8 +66,8 @@ regions <- import(here("data", "us_census_bureau_regions_and_divisions.csv"), se
 # join honey and regions
 honey_regions <- left_join(honey, regions, by = "state")
 
-# chose to evaluate if there were equal observations for each state
-honey_regions %>% 
+# evaluated if there were equal observations for each state
+state_obs <- honey_regions %>% 
   group_by(state) %>% 
   summarize(n = n())
 
@@ -156,7 +158,7 @@ us <- rename(us, state = iso_3166_2)
 
 df <- right_join(honey, us)
 
-df_tib <- as.tibble(df)
+df_tib <- as_tibble(df)
 
 ggplot(data = df_tib, aes(geometry = geometry, 
 													fill = priceperlb), 
@@ -164,13 +166,12 @@ ggplot(data = df_tib, aes(geometry = geometry,
 	geom_sf(color = "white", size = 0) +
 	guides(color = "none") +
 		facet_wrap(~year) +
-	scale_fill_viridis(name="Price per pound", 
+	scale_fill_viridis(name = "Price per pound", 
 										 option = "magma",
 										 label = scales::dollar,
 										 limits = c(0,5)) +
 	labs(title = "Price of honey per pound from 1998-2012") +
 	theme_void()
-		
 ```
 
 
