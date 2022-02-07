@@ -228,7 +228,7 @@ p4 <- ggplot(total_prod, aes(year, totalprod, color = state_complete)) +
 
 p4
 ```
-```{r part3-check, fig.width=8, fig.height=8}
+```{r part3-check, fig.width=13, fig.height=9}
 #to check
 colorblindr::cvd_grid(p4)
 ```
