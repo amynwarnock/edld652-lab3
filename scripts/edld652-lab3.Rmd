@@ -50,7 +50,7 @@ total_prod <- honey_full %>%
     #group_by(state_complete) %>%
     mutate(state_complete = as.factor(state_complete))
 ```
-We made several attempts to show the change in growth over time. The first version was a heatmap. Highlighting the state data with 'gghighlight' obcures any data fluctuations for said state, over years, thus, we only highlighted the labels for the Western states.
+We made several attempts to show the change in growth over time. The first version was a heatmap. Highlighting the state data with 'gghighlight' obscures any data fluctuations for said state, over years, thus, we only highlighted the labels for the Western states.
 ```{r part1-heatplot}
 states <- unique(total_prod$state_complete)
 states <- sort(states)
@@ -78,7 +78,7 @@ in millions of lbs.",
 p1
 ```
 
-### Next, we tried using with the different arrangement of coordinates. 
+Next, we tried using the heatmap with the different arrangement of coordinates. 
 ```{r part1-heatmap, fig.width = 10.5}
 ggplot(honey_full, aes(state, year, fill = totalprod))+
     geom_tile(color = "white", size = 0.25) +
@@ -122,7 +122,7 @@ p2 <- ggplot(total_prod, aes(year, totalprod, color = state_complete)) +
 p2
 ```
 
-We also made a line plot for each state. Besides highlighting the line for each Western state by different color, we tried using the Label of the state printed differently as well. However, ggplot was not accepting a vector of colors for 'element_text()', and none of the troubleshooting helped.
+We also made a line plot for each state. Besides highlighting the line for each Western state by different color, we tried using the Label of the state printed in a different style/color as well. However, ggplot was not accepting a vector of colors for 'element_text()', and none of the troubleshooting helped.
 ```{r part1-facets, fig.width=10, fig.height=10}
 states <- unique(total_prod$state_complete)
 label_color <- ifelse(states == "Oregon", "#03b800",
@@ -181,7 +181,7 @@ ggplot(dumbbell, aes(totalprod, state_complete)) +
 
 ### 2. Reproduce the plot according three different kinds of color blindness, as well as a desaturated version.
 
-We tried to reproduce the color-blindless-friendly versions for one of the heatmaps and one of the faceted plots. The heatmap uses sequential palettes, while the faceted plot uses the qualitatiove one. The heatmap plot allows the better illustration of the gradation of change over years, and let the different palettes show, while the faceted plot allows for a more effective highlighting of the western states. 
+We tried to reproduce the color-blindless-friendly versions for one of the heatmaps and one of the faceted plots. The heatmap uses sequential palettes, while the faceted plot uses the qualitative one. The heatmap plot allows the better illustration of the gradation of change over years, and let the different palettes show, while the faceted plot allows for a more effective highlighting of the western states. 
 
 ```{r part2-heat, fig.width=13, fig.height=11}
 colorblindr::cvd_grid(p1)
