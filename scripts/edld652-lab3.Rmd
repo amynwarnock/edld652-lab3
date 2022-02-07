@@ -23,12 +23,14 @@ library(colorblindr)
 #install.packages("remotes")
 #remotes::install_github("hrbrmstr/albersusa")
 #AW: I had to answer "No" to the question about the binary packages to get it to download
-#library(albersusa)
-#library(viridis)
+library(albersusa)
+library(viridis)
 #install.packages("gghighlight")
 library(gghighlight)
 library(ggplot2)
 library(dplyr)
+# install.packages("RColorBrewer")
+library(RColorBrewer)
 ```
 
 ### 1. Visualize the total production of honey across years by state. Use color to highlight the west coast (Washington, Oregon, and California) with a different color used for each west coast state.
@@ -47,10 +49,8 @@ total_prod <- honey_full %>%
     select(state_complete, totalprod, year) %>% 
     #group_by(state_complete) %>%
     mutate(state_complete = as.factor(state_complete))
-str(total_prod)
-
-
 ```
+We made several attempts to shwo the change in growth over time. The first version was a heatmap. Highlighting the state data with 'gghighlight' obcures any data fluctiations for said state, over years, thus, we only highlighted the labels for the Westerm states.
 ```{r part1-heatplot}
 states <- unique(total_prod$state_complete)
 states <- sort(states)
@@ -63,32 +63,31 @@ label_face <- ifelse(states == "Oregon" | states == "Washington" | states == "Ca
                 "bold",
                 "plain")
 
-
-ggplot(total_prod, aes(year, state_complete)) +
+p1 <- ggplot(total_prod, aes(year, state_complete)) +
   geom_tile(aes(fill = totalprod)) +
   labs(y = "U.S. States", 
-       fill = "Total production, in millions of lbs.",
+       fill = "Total production, 
+in millions of lbs.",
        title = "U.S. Honey Production",
          subtitle = "Total production of honey across years by state",
          caption = "Data: #tidytuesday") +
   #gghighlight(state_complete %in% c("California", "Oregon", "Washington")) +
-  #scale_y_discrete(limits = rev(levels(total_prod$state_complete))) +
   theme(axis.text.y = element_text(color = label_color,face = label_face))+
-   scale_fill_viridis_c(option = "magma")
+  scale_fill_viridis_c(option = "magma")
+
+p1
 ```
-I tried using the heatmap next. 
-```{r part1-heatmap}
-str(honey_full)
+
+Next, we tried using with the different arrangement of coordinates. 
+```{r part1-heatmap, fig.width = 10.5}
 ggplot(honey_full, aes(state, year, fill = totalprod))+
     geom_tile(color = "white", size = 0.25) +
     labs(title = "U.S. Honey Production",
          subtitle = "Total production of honey across years by state",
          caption = "Data: #tidytuesday") +
     scale_y_continuous(breaks = seq(1998, 2012, 1), expand = c(0, 0))+
-  #scale_fill_brewer(palette = "YlOrRd") +
-    #scale_fill_brewer(palette = "YlOrRd", direction = -1,
-                      #labels = c("-21.1%", "8.7", "3.2", "19.3", "134"))+
-    guides(fill = guide_legend(title = "Total Production, in millions of lbs.",
+    guides(fill = guide_legend(title = "Total Production, 
+in millions of lbs.",
                                label.position = "bottom",
                                label.hjust = 1,
                                keywidth = 4, 
@@ -98,30 +97,34 @@ ggplot(honey_full, aes(state, year, fill = totalprod))+
           axis.text.x = element_text(color = label_color,face = label_face))
 
 ```
-Another way to vizualize the change over time with highlighting the western states, is to have a line plot, with all the states besides Western ones being in the background. Below are versions with 3 Western states together, and with each of them faceted separately. 
+
+
+Another way to vizualize the change over time with highlighting the western states, is to have a line plot, with all the states besides Western ones being in the background. Below are versions with 3 Western states together, and with each of them faceted individually. 
 ```{r part1-line }
 ggplot(total_prod, aes(year, totalprod, color = state_complete)) +
-    geom_line()+
- gghighlight(state_complete %in% c("California", "Oregon", "Washington")) +
-  scale_color_OkabeIto() +
-    labs(y = "Total production, in millions of lbs.",
-         title = "U.S. Honey Production",
-         subtitle = "Total production of honey across years by state",
-         caption = "Data: #tidytuesday")
-
-ggplot(total_prod, aes(year, totalprod, color = state_complete)) +
-    geom_line()+
-  facet_wrap(~state_complete) +
- gghighlight(state_complete %in% c("California", "Oregon", "Washington")) +
-  scale_color_OkabeIto() + 
+    geom_line(size = 1)+
+  gghighlight(state_complete %in% c("California", "Oregon", "Washington"),
+             unhighlighted_params = list(size = 0.5, colour = alpha("grey20", 0.2))) +
   labs(y = "Total production, in millions of lbs.",
-         title = "U.S. Honey Production",
-         subtitle = "Total production of honey across years by state",
-         caption = "Data: #tidytuesday")
+       title = "U.S. Honey Production",
+       subtitle = "Total production of honey across years by state",
+       caption = "Data: #tidytuesday")
 
+p2 <- ggplot(total_prod, aes(year, totalprod, color = state_complete)) +
+  geom_line(size = 1.5)+
+  facet_wrap(~state_complete) +
+  gghighlight(state_complete %in% c("California", "Oregon", "Washington"),
+              unhighlighted_params = list(size = 0.5, colour = alpha("grey20", 0.2))) +
+  labs(y = "Total production, in millions of lbs.",
+       title = "U.S. Honey Production",
+       subtitle = "Total production of honey across years by state",
+       caption = "Data: #tidytuesday")
+
+p2
 ```
-I also made a line plot for each state. Besides highlighting the line for each Western state by different color, I tried using the Label of the state printed differently as well. However, ggplot was not accepting a vector of colors for 'element_text()', and none of the troubleshooting helped.
-```{r part1-facets}
+
+We also made a line plot for each state. Besides highlighting the line for each Western state by different color, we tried using the Label of the state printed differently as well. However, ggplot was not accepting a vector of colors for 'element_text()', and none of the troubleshooting helped.
+```{r part1-facets, fig.width=10, fig.height=10}
 states <- unique(total_prod$state_complete)
 label_color <- ifelse(states == "Oregon", "#03b800",
                       ifelse(states == "Washington", "#4714ff", 
@@ -149,21 +152,16 @@ total_prod %>%
          title = "U.S. Honey Production",
          subtitle = "Total production of honey across years by state",
          caption = "Data: #tidytuesday") 
-  
 ```
-I have also tried creating the dumbbell plot to show the difference between 1998 and 2012 in honey production. That plot is not ideal, since it only shows the change between the initial and final points, without reflecting any fluctuations in between. 
-```{r part1-dumbbell}
+
+Finally, we have tried creating the dumbbell plot to show the difference between 1998 and 2012 in honey production. That plot is not ideal, since it only shows the change between the initial and final points, without reflecting any fluctuations in between. 
+```{r part1-dumbbell, fig.width=10, fig.height=8}
 dumbbell <- total_prod %>% 
   mutate(year = as.character(year), 
          state_complete = as.factor(state_complete))
 
-#dumbbell$state_complete <- factor(dumbbell$state_complete, levels = rev(levels(dumbbell$state_complete)))
-         
 dumbbell <- dumbbell %>% 
   filter(year %in% c("1998", "2012"))
-
-
-
 
 ggplot(dumbbell, aes(totalprod, state_complete)) +
   geom_line(aes(group = state_complete), color = "gray40") +
@@ -180,25 +178,62 @@ ggplot(dumbbell, aes(totalprod, state_complete)) +
        subtitle = "Change in production between 1998 and 2012 by state",
        caption = "Data: #tidytuesday") +
   theme(axis.text.y = element_text(color = label_color, face = label_face))
-
-
-
-  
-str(dumbbell)
 ```
-
 
 ### 2. Reproduce the plot according three different kinds of color blindness, as well as a desaturated version.
 
-```{r part2}
+We tried to reproduce the color-blindless-friendly versions for one of the heatmaps and one of the faceted plots. The heatmap uses sequential palettes, while the faceted plot uses the qualitatiove one. The heatmap plot allows the better illustration of the gradation of change over years, and let the different palettes show, while the faceted plot allows for a more effective highlighting of the western states. 
 
+```{r part2-heat, fig.width=13, fig.height=11}
+colorblindr::cvd_grid(p1)
+```
+```{r part2-facet, fig.width=10, fig.height=10}
+colorblindr::cvd_grid(p2)
 ```
 
 ### 3. Reproduce the plot using a color blind safe palette.
 
-```{r part3}
+```{r part3-heat, fig.width=10, fig.height=10}
+#reminder which sequential palettes are color blind safe
+#display.brewer.all(type="seq", colorblindFriendly = TRUE)
 
+p3 <- ggplot(total_prod, aes(year, state_complete)) +
+  geom_tile(aes(fill = totalprod)) +
+  labs(y = "U.S. States", 
+       fill = "Total production, 
+in millions of lbs.",
+       title = "U.S. Honey Production",
+       subtitle = "Total production of honey across years by state",
+       caption = "Data: #tidytuesday") +
+  theme(axis.text.y = element_text(color = label_color,face = label_face)) +
+  scale_fill_continuous_sequential("Blues", begin = 0.25, end = 1) 
+  
+p3
+
+#to check
+colorblindr::cvd_grid(p3)
 ```
+
+```{r part3-facet, fig.width=6, fig.height=6}
+
+p4 <- ggplot(total_prod, aes(year, totalprod, color = state_complete)) +
+    geom_line(size = 1.5)+
+  facet_wrap(~state_complete) +
+ gghighlight(state_complete %in% c("California", "Oregon", "Washington"),
+             unhighlighted_params = list(size = 0.5, colour = alpha("grey20", 0.2))) +
+  scale_color_OkabeIto() + 
+  labs(y = "Total production, in millions of lbs.",
+         title = "U.S. Honey Production",
+         subtitle = "Total production of honey across years by state",
+         caption = "Data: #tidytuesday")
+
+p4
+```
+```{r part3-check, fig.width=8, fig.height=8}
+#to check
+colorblindr::cvd_grid(p4)
+```
+
 ### 4. Download the file here denoting the region and division of each state.  
 * **Join the file with your honey file.**
 * **Produce a bar plot displaying the average honey for each state (collapsing across years).**
