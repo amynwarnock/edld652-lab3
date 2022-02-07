@@ -4,12 +4,15 @@ author: "Ksenia Gordeeva, Rebeccca Gordon, Amy Warnock"
 date: "2/7/2022"
 output:
   html_document:
-   code_folding: hide
+    toc: true
+    toc_float: true
+    code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
-                      message = FALSE)
+                      message = FALSE,
+                      warning = FALSE)
 
 library(tidyverse)
 library(rio)
@@ -37,9 +40,11 @@ library(RColorBrewer)
 
 ```{r part1-prep}
 honey <- import(here("data", "honeyproduction.csv"), setclass = "tbl_df")
+
 regions <- import(here("data", "us_census_bureau_regions_and_divisions.csv"), setclass = "tbl_df") %>% 
   rename(state = `State Code`, `state_complete` = State) %>% 
   rename_with(tolower)
+
 honey_full <- left_join(honey, regions, by = "state")
 
 #Change scale of total production
@@ -181,11 +186,12 @@ ggplot(dumbbell, aes(totalprod, state_complete)) +
 
 ### 2. Reproduce the plot according three different kinds of color blindness, as well as a desaturated version.
 
-We tried to reproduce the color-blindless-friendly versions for one of the heatmaps and one of the faceted plots. The heatmap uses sequential palettes, while the faceted plot uses the qualitative one. The heatmap plot allows the better illustration of the gradation of change over years, and let the different palettes show, while the faceted plot allows for a more effective highlighting of the western states. 
+We tried to reproduce the color-blindness-friendly versions for one of the heatmaps and one of the faceted plots. The heatmap uses sequential palettes, while the faceted plot uses the qualitative one. The heatmap plot allows the better illustration of the gradation of change over years, and let the different palettes show, while the faceted plot allows for a more effective highlighting of the western states. 
 
 ```{r part2-heat, fig.width=13, fig.height=11}
 colorblindr::cvd_grid(p1)
 ```
+
 ```{r part2-facet, fig.width=10, fig.height=10}
 colorblindr::cvd_grid(p2)
 ```
@@ -228,12 +234,14 @@ p4 <- ggplot(total_prod, aes(year, totalprod, color = state_complete)) +
 
 p4
 ```
+
 ```{r part3-check, fig.width=13, fig.height=9}
 #to check
 colorblindr::cvd_grid(p4)
 ```
 
-### 4. Download the file here denoting the region and division of each state.  
+### 4. Produce a bar plot of average honey produced by each state (collapsed across years) with color highlighting region.  
+* **Download the file here denoting the region and division of each state.**
 * **Join the file with your honey file.**
 * **Produce a bar plot displaying the average honey for each state (collapsing across years).**
 * **Use color to highlight the region of the country the state is from.**
@@ -241,7 +249,7 @@ colorblindr::cvd_grid(p4)
 
 (Note: I tried out two different qualitative color palettes for this bar plot.) 
 
-It appears that, on average, states in the Midwestern and Western regions of the US produce the most honey and that states in the Northeast region produce the least. States from the Southern region of the US also appear to produce less overall, with the exception of Florida. The states with the most honey production are fairly large in terms of geographic area. It would be interesting to see if there is a relationship between geographic area of a state and honey production (e.g., smaller states are associated with lower honey production). I'm also curious if there is a certain crop grown in North and South Dakota that commercial honey bees forage on (e.g., clover) and if there is a relationship between prevalence of wind-pollinated crops (e.g., corn, wheat, grass seed) and lower commercial honey production. 
+It appears that, on average, states in the Midwestern and Western regions of the US produce the most honey and that states in the Northeast region produce the least. States from the Southern region of the US also appear to produce less overall, with the exception of Florida. The states with the most honey production are fairly large in terms of geographic area. It would be interesting to see if there is a relationship between geographic area of a state and honey production (e.g., smaller states are associated with lower honey production). I'm also curious if there is a certain crop grown in North and South Dakota that commercial honey bees forage on (e.g., clover) and if there is a relationship between prevalence of wind-pollinated or self-pollinated crops (e.g., corn, wheat, grass seed, soy) and lower commercial honey production that could explain why some states have lower honey production (in particular, the states in the Midwest that have produce much less honey). 
 
 ```{r part4-prep, results = 'hide'}
 # load data
