@@ -50,7 +50,7 @@ total_prod <- honey_full %>%
     #group_by(state_complete) %>%
     mutate(state_complete = as.factor(state_complete))
 ```
-We made several attempts to shwo the change in growth over time. The first version was a heatmap. Highlighting the state data with 'gghighlight' obcures any data fluctiations for said state, over years, thus, we only highlighted the labels for the Westerm states.
+We made several attempts to show the change in growth over time. The first version was a heatmap. Highlighting the state data with 'gghighlight' obcures any data fluctuations for said state, over years, thus, we only highlighted the labels for the Western states.
 ```{r part1-heatplot}
 states <- unique(total_prod$state_complete)
 states <- sort(states)
@@ -78,7 +78,7 @@ in millions of lbs.",
 p1
 ```
 
-Next, we tried using with the different arrangement of coordinates. 
+### Next, we tried using with the different arrangement of coordinates. 
 ```{r part1-heatmap, fig.width = 10.5}
 ggplot(honey_full, aes(state, year, fill = totalprod))+
     geom_tile(color = "white", size = 0.25) +
@@ -97,7 +97,6 @@ in millions of lbs.",
           axis.text.x = element_text(color = label_color,face = label_face))
 
 ```
-
 
 Another way to vizualize the change over time with highlighting the western states, is to have a line plot, with all the states besides Western ones being in the background. Below are versions with 3 Western states together, and with each of them faceted individually. 
 ```{r part1-line }
@@ -360,7 +359,8 @@ ggplot(data = df_tib, aes(geometry = geometry,
 										 option = "magma",
 										 label = scales::dollar,
 										 limits = c(0,5)) +
-	labs(title = "Price of honey per pound from 1998-2012") +
+	labs(title = "Price of honey per pound from 1998-2012",
+			 caption = "Source: #tidytuesday") +
 	theme_void()
 ```
 
